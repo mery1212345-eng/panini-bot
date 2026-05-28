@@ -23,6 +23,8 @@ def revisar_stock(page):
 
     # Navegación
     page.goto(URL, wait_until="networkidle")
+    print(page.url)
+    print(page.content()[:500])
 
     # Espera humana
     page.wait_for_timeout(1500)

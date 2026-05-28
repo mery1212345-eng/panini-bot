@@ -6,8 +6,8 @@ import os
 URL = os.getenv("LINK")
 
 def enviar_telegram(mensaje):
-    token = "TELEGRAM_TOKEN"
-    chat_id = "TELEGRAM_CHAT_ID"
+    token = os.getenv("TELEGRAM_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
     try:
         requests.get(

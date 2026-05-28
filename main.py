@@ -5,12 +5,9 @@ import os
 
 URL = os.getenv("LINK")
 
-# -----------------------------
-# Función para enviar mensajes a Telegram
-# -----------------------------
 def enviar_telegram(mensaje):
-    token = "TELEGRAM_TOKEN"  # Usa variables de entorno en Railway
-    chat_id = "TELEGRAM_CHAT_ID"  # Usa variables de entorno en Railway
+    token = "TELEGRAM_TOKEN"
+    chat_id = "TELEGRAM_CHAT_ID"
 
     try:
         requests.get(
@@ -21,81 +18,64 @@ def enviar_telegram(mensaje):
         pass
 
 
-# -----------------------------
-# Función robusta para revisar stock
-# -----------------------------
 def revisar_stock(page):
     print(f"LINK recibido: '{URL}'")
-    page.goto(URL, wait_until="networkidle")
-    page.wait_for_timeout(5000)
 
-    # SOLO PARA DEBUG: screenshot (Railway la guarda en el contenedor)
+    # Navegación
+    page.goto(URL, wait_until="networkidle")
+
+    # Espera humana
+    page.wait_for_timeout(1500)
+
+    # Movimiento humano
+    page.mouse.move(200, 300, steps=25)
+
+    # Screenshot para debug
     page.screenshot(path="page.png", full_page=True)
     time.sleep(2)
 
     html = page.content().lower()
 
-    # 1) Indicadores de NO stock
+    # Indicadores de NO stock
     no_stock = [
-        "sold out",
-        "out of stock",
-        "notify me",
-        "sold-out",
-        "currently unavailable",
-        "agotado",
-        "soldout"
+        "sold out", "out of stock", "notify me", "sold-out",
+        "currently unavailable", "agotado", "soldout"
     ]
+    if any(p in html for p in no_stock):
+        return False
 
-    for palabra in no_stock:
-        if palabra in html:
-            return False
-
-    # 2) Indicadores de SÍ stock
+    # Indicadores de SÍ stock
     yes_stock = [
-        "add to cart",
-        "add-to-cart",
-        "addtocart",
-        "buy now",
-        "comprar",
-        "añadir",
-        "add-to-bag",
-        "add to bag",
-        "add-to-basket",
-        "add to basket"
+        "add to cart", "add-to-cart", "addtocart", "buy now",
+        "comprar", "añadir", "add-to-bag", "add to bag",
+        "add-to-basket", "add to basket"
     ]
+    if any(p in html for p in yes_stock):
+        return True
 
-    for palabra in yes_stock:
-        if palabra in html:
-            return True
-
-    # 3) Detección por botones reales
+    # Botones reales
     try:
         botones = page.locator("button").all_text_contents()
         botones = [b.lower() for b in botones]
-
-        for b in botones:
-            if any(x in b for x in ["add", "buy", "cart", "bag", "basket", "comprar", "añadir"]):
-                return True
+        if any(any(x in b for x in ["add", "buy", "cart", "bag", "basket", "comprar", "añadir"]) for b in botones):
+            return True
     except:
         pass
 
-    # 4) Si no encontramos nada claro → NO hay stock
     return False
 
-os.environ["HOME"] = "/root"
-os.makedirs("/root/.cache/ms-playwright", exist_ok=True)    
 
-# -----------------------------
-# PROCESO PRINCIPAL
-# -----------------------------
+os.environ["HOME"] = "/root"
+os.makedirs("/root/.cache/ms-playwright", exist_ok=True)
+
 with sync_playwright() as p:
 
     print("🟢 El script ha iniciado correctamente (Railway lo reinició).")
     enviar_telegram("🟢 El script ha iniciado correctamente (Railway lo reinició).")
 
     browser = p.chromium.launch(
-        headless=True,   # IMPORTANTE: Railway lo ejecuta en modo headful virtual
-        args=[ 
+        headless=True,
+        args=[
             "--disable-gpu",
             "--disable-dev-shm-usage",
             "--no-sandbox",
@@ -104,8 +84,21 @@ with sync_playwright() as p:
         ]
     )
 
-    context = browser.new_context()
+    context = browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        viewport={"width": 1920, "height": 1080},
+        device_scale_factor=1,
+        is_mobile=False,
+    )
+
     page = context.new_page()
+
+    # Anti‑detección (ANTES de navegar)
+    page.add_init_script("""
+    Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+    Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
+    Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+    """)
 
     while True:
         try:

@@ -3,7 +3,7 @@ import requests
 from playwright.sync_api import sync_playwright
 import os
 
-URL = "LINK"
+URL = os.getenv("LINK")
 
 # -----------------------------
 # Función para enviar mensajes a Telegram

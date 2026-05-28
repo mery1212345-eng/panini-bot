@@ -3,7 +3,7 @@ import requests
 from playwright.sync_api import sync_playwright
 import os
 
-URL = "https://www.paniniamerica.net/fifa-world-cup-2026-official-sticker-collection-50-pack-box-online-exclusive.html"
+URL = "LINK"
 
 # -----------------------------
 # Función para enviar mensajes a Telegram

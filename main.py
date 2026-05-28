@@ -25,6 +25,7 @@ def enviar_telegram(mensaje):
 # Función robusta para revisar stock
 # -----------------------------
 def revisar_stock(page):
+    print(f"LINK recibido: '{URL}'")
     page.goto(URL, wait_until="networkidle")
     page.wait_for_timeout(5000)
 

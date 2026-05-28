@@ -87,6 +87,12 @@ with sync_playwright() as p:
     )
 
     context = browser.new_context(
+        proxy={
+            "server": "http://198.105.121.200:5863",
+            "username": "hhjaadir",
+            "password": "2wz7mibnk5w3"
+        },
+
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         viewport={"width": 1920, "height": 1080},
         device_scale_factor=1,
